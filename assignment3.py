@@ -43,8 +43,13 @@ def pre_tournament_preparation():
             team_stats["morale"] += 5
             print("Training completed! Strength +10, Morale +5")
             # Check for injuries after training
-            new_injuries = int(input("Any injuries from training? (0-3): "))
+            new_injuries = int(input("Any injuries from training? (0-2): "))
             team_stats["injuries"] += new_injuries
+            # Ask for recoveries if injuries > 0
+            if team_stats["injuries"] > 0:
+                recoveries = int(input(f"Any recoveries? (0-{team_stats['injuries']}): "))
+                team_stats["injuries"] = max(0, team_stats["injuries"] - recoveries)
+                print(f"Recovered {recoveries} injuries. Current injuries: {team_stats['injuries']}")
             if team_stats["injuries"] > 5:
                 print("Too many injuries! Team eliminated.")
                 break
@@ -59,8 +64,13 @@ def pre_tournament_preparation():
                 team_stats["morale"] -= 5
                 print("Friendly loss! Morale -5")
             # Check for injuries after friendly
-            new_injuries = int(input("Any injuries from friendly? (0-3): "))
+            new_injuries = int(input("Any injuries from friendly? (0-2): "))
             team_stats["injuries"] += new_injuries
+            # Ask for recoveries if injuries > 0
+            if team_stats["injuries"] > 0:
+                recoveries = int(input(f"Any recoveries? (0-{team_stats['injuries']}): "))
+                team_stats["injuries"] = max(0, team_stats["injuries"] - recoveries)
+                print(f"Recovered {recoveries} injuries. Current injuries: {team_stats['injuries']}")
             if team_stats["injuries"] > 5:
                 print("Too many injuries! Team eliminated.")
                 break
@@ -78,27 +88,27 @@ def pre_tournament_preparation():
             continue  # Skip to next iteration for invalid input
 
 # Group stage simulation
-def group_stage_simulation(teams):
+def group_stage_simulation(teams, team_name):
     print("\n=== GROUP STAGE ===")
     points = {team: 0 for team in teams}
     
-    # Match pairings: team0 vs team1, team1 vs team2, team2 vs team0
-    match_pairings = [
-        (teams[0], teams[1]),
-        (teams[1], teams[2]),
-        (teams[2], teams[0])
-    ]
+    fixture = make_group_stage_fixture(teams)
     
-    for i, (home_team, away_team) in enumerate(match_pairings):
-        print(f"\nMatch {i+1}: {home_team} vs {away_team}")
+    for match_key, (home_team, away_team) in fixture.items():
+        print(f"\n{match_key}: {home_team} vs {away_team}")
         home_goals = int(input(f"Goals scored by {home_team}: "))
         away_goals = int(input(f"Goals scored by {away_team}: "))
         
-        # Apply team stats modifiers
-        if team_stats["strength"] >= 60:
-            home_goals += 1
-        if team_stats["morale"] < 30:
-            home_goals = max(0, home_goals - 1)
+        if home_team == team_name:
+            if team_stats["strength"] >= 60:
+                home_goals += 1
+            if team_stats["morale"] < 30:
+                home_goals = max(0, home_goals - 1)
+        elif away_team == team_name:
+            if team_stats["strength"] >= 60:
+                away_goals += 1
+            if team_stats["morale"] < 30:
+                away_goals = max(0, away_goals - 1)
         
         if home_goals > away_goals:
             points[home_team] += 3
@@ -111,21 +121,22 @@ def group_stage_simulation(teams):
             points[away_team] += 1
             print("It's a draw!")
         
-        # Check for injuries after match
-        new_injuries = int(input("Any injuries from this match? (0-3): "))
-        team_stats["injuries"] += new_injuries
-        if team_stats["injuries"] > 5:
-            print("Too many injuries! Team eliminated from tournament.")
-            return points
+        if team_name in (home_team, away_team):
+            if team_stats["injuries"] >= 5:
+                print(f"{team_name}: Critical injuries! Match forfeited.")
+                break
         
-        # Check for forfeit due to injuries
-        if team_stats["injuries"] >= 5:
-            print("Critical injuries! Match forfeited.")
-            continue  # Skip remaining group matches
+        if team_name in (home_team, away_team):
+            new_injuries = int(input(f"Any injuries for {team_name} in this match? (0-2): "))
+            team_stats["injuries"] += new_injuries
+            if team_stats["injuries"] > 0:
+                recoveries = int(input(f"Any recoveries for {team_name}? (0-{team_stats['injuries']}): "))
+                team_stats["injuries"] = max(0, team_stats["injuries"] - recoveries)
+                print(f"Recovered {recoveries} injuries. Current injuries: {team_stats['injuries']}")
     
     return points
 
-# Knockout stages simulation
+
 def knockout_stages(team_name):
     print(f"\n=== KNOCKOUT STAGES ({team_name}) ===")
     stages = ["Round of 16", "Quarter-final", "Semi-final", "Final"]
@@ -152,6 +163,18 @@ def knockout_stages(team_name):
         else:
             print("Invalid result, match replayed.")
             continue
+        
+        # Check for injuries after knockout match
+        new_injuries = int(input("Any injuries from this match? (0-2): "))
+        team_stats["injuries"] += new_injuries
+        # Ask for recoveries if injuries > 0
+        if team_stats["injuries"] > 0:
+            recoveries = int(input(f"Any recoveries for {team_name}? (0-{team_stats['injuries']}): "))
+            team_stats["injuries"] = max(0, team_stats["injuries"] - recoveries)
+            print(f"Recovered {recoveries} injuries. Current injuries: {team_stats['injuries']}")
+        if team_stats["injuries"] > 5:
+            print("Too many injuries! Team eliminated from tournament.")
+            break
         
         # Advance to next stage
         current_stage += 1
@@ -181,9 +204,12 @@ def run_tournament_simulation():
         raise ValueError("Selected team must be one of the 3 entered teams")
     
     # Group stage
-    points = group_stage_simulation(teams)
+    points = group_stage_simulation(teams, team_name)
     
-    print(f"\nGroup Standings: {points}")
+    sorted_standings = sorted(points.items(), key=lambda x: x[1], reverse=True)
+    print(f"\nGroup Standings:")
+    for rank, (team, pts) in enumerate(sorted_standings, 1):
+        print(f"  {rank}. {team}: {pts} pts")
     
     # Check qualification
     if points[team_name] < 4:
