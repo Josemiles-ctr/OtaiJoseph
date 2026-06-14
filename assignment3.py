@@ -42,6 +42,12 @@ def pre_tournament_preparation():
             team_stats["strength"] += 10
             team_stats["morale"] += 5
             print("Training completed! Strength +10, Morale +5")
+            # Check for injuries after training
+            new_injuries = int(input("Any injuries from training? (0-3): "))
+            team_stats["injuries"] += new_injuries
+            if team_stats["injuries"] > 5:
+                print("Too many injuries! Team eliminated.")
+                break
             pass  # Placeholder for advanced training features
         elif choice == "2":
             # Friendly match affects morale and injuries
@@ -52,6 +58,12 @@ def pre_tournament_preparation():
             else:
                 team_stats["morale"] -= 5
                 print("Friendly loss! Morale -5")
+            # Check for injuries after friendly
+            new_injuries = int(input("Any injuries from friendly? (0-3): "))
+            team_stats["injuries"] += new_injuries
+            if team_stats["injuries"] > 5:
+                print("Too many injuries! Team eliminated.")
+                break
         elif choice == "3":
             # Recovery reduces injuries
             team_stats["injuries"] = max(0, team_stats["injuries"] - 2)
@@ -70,10 +82,15 @@ def group_stage_simulation(teams):
     print("\n=== GROUP STAGE ===")
     points = {team: 0 for team in teams}
     
-    fixture = make_group_stage_fixture(teams)
+    # Match pairings: team0 vs team1, team1 vs team2, team2 vs team0
+    match_pairings = [
+        (teams[0], teams[1]),
+        (teams[1], teams[2]),
+        (teams[2], teams[0])
+    ]
     
-    for match_key, (home_team, away_team) in fixture.items():
-        print(f"\n{match_key}: {home_team} vs {away_team}")
+    for i, (home_team, away_team) in enumerate(match_pairings):
+        print(f"\nMatch {i+1}: {home_team} vs {away_team}")
         home_goals = int(input(f"Goals scored by {home_team}: "))
         away_goals = int(input(f"Goals scored by {away_team}: "))
         
@@ -94,10 +111,17 @@ def group_stage_simulation(teams):
             points[away_team] += 1
             print("It's a draw!")
         
+        # Check for injuries after match
+        new_injuries = int(input("Any injuries from this match? (0-3): "))
+        team_stats["injuries"] += new_injuries
+        if team_stats["injuries"] > 5:
+            print("Too many injuries! Team eliminated from tournament.")
+            return points
+        
         # Check for forfeit due to injuries
         if team_stats["injuries"] >= 5:
             print("Critical injuries! Match forfeited.")
-            break
+            continue  # Skip remaining group matches
     
     return points
 
@@ -172,6 +196,5 @@ def run_tournament_simulation():
     else:
         print(f"\n{team_name} eliminated from tournament.")
 
-# Run the simulation
-if __name__ == "__main__":
-    run_tournament_simulation()
+## Main execution
+run_tournament_simulation()
