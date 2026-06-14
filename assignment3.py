@@ -3,6 +3,15 @@
 # 	"Away_goals" : int	
 # }
 
+def make_group_stage_fixture(teams):
+    if len(teams) != 3:
+        raise ValueError("Expects exactly three teams")
+    fixture = {
+        "match1": [teams[0], teams[1]],
+        "match2": [teams[1], teams[2]],
+        "match3": [teams[2], teams[0]]
+    }
+    return fixture
 
 
 # Team performance attributes
@@ -61,15 +70,10 @@ def group_stage_simulation(teams):
     print("\n=== GROUP STAGE ===")
     points = {team: 0 for team in teams}
     
-    # Match pairings: team0 vs team1, team1 vs team2, team2 vs team0
-    match_pairings = [
-        (teams[0], teams[1]),
-        (teams[1], teams[2]),
-        (teams[2], teams[0])
-    ]
+    fixture = make_group_stage_fixture(teams)
     
-    for i, (home_team, away_team) in enumerate(match_pairings):
-        print(f"\nMatch {i+1}: {home_team} vs {away_team}")
+    for match_key, (home_team, away_team) in fixture.items():
+        print(f"\n{match_key}: {home_team} vs {away_team}")
         home_goals = int(input(f"Goals scored by {home_team}: "))
         away_goals = int(input(f"Goals scored by {away_team}: "))
         
@@ -93,13 +97,13 @@ def group_stage_simulation(teams):
         # Check for forfeit due to injuries
         if team_stats["injuries"] >= 5:
             print("Critical injuries! Match forfeited.")
-            continue  # Skip remaining group matches
+            break
     
     return points
 
 # Knockout stages simulation
-def knockout_stages():
-    print("\n=== KNOCKOUT STAGES ===")
+def knockout_stages(team_name):
+    print(f"\n=== KNOCKOUT STAGES ({team_name}) ===")
     stages = ["Round of 16", "Quarter-final", "Semi-final", "Final"]
     current_stage = 0
     tournament_won = False
@@ -109,28 +113,28 @@ def knockout_stages():
         
         # Check if team can progress
         if team_stats["morale"] < 20:
-            print("Morale too low! Team eliminated.")
-            break  # Exit loop - tournament lost
+            print(f"{team_name}: Morale too low! Team eliminated.")
+            break
         
-        result = input(f"Result in {stages[current_stage]}? (w/l): ").lower()
+        result = input(f"Result for {team_name} in {stages[current_stage]}? (w/l): ").lower()
         
         if result == "w":
             team_stats["morale"] += 15
             team_stats["strength"] += 5
-            print("Victory! Morale +15, Strength +5")
+            print(f"{team_name} wins! Morale +15, Strength +5")
         elif result == "l":
-            print("Defeat! Team eliminated.")
-            break  # Exit loop - tournament lost
+            print(f"{team_name} loses! Team eliminated.")
+            break
         else:
             print("Invalid result, match replayed.")
-            continue  # Skip to next iteration
+            continue
         
         # Advance to next stage
         current_stage += 1
         
         if current_stage == len(stages):
             tournament_won = True
-            break  # Exit loop - tournament won
+            break
     
     return tournament_won
 
@@ -138,25 +142,35 @@ def knockout_stages():
 def run_tournament_simulation():
     print("=== 2026 FIFA WORLD CUP SIMULATION ===")
     
-    # Pre-tournament
+    # Pre-tournament (friendlies and training)
     pre_tournament_preparation()
     
+    # Enter group stage teams after preparation
+    print("\n=== ENTER GROUP STAGE TEAMS ===")
+    teams = [
+        input("Team 1: ").strip(),
+        input("Team 2: ").strip(),
+        input("Team 3: ").strip()
+    ]
+    team_name = input("Which team are you managing? ").strip()
+    if team_name not in teams:
+        raise ValueError("Selected team must be one of the 3 entered teams")
+    
     # Group stage
-    teams = ["Your Team", "Team B", "Team C"]
     points = group_stage_simulation(teams)
     
     print(f"\nGroup Standings: {points}")
     
     # Check qualification
-    if points["Your Team"] < 4:
-        print("Failed to qualify for knockout stages!")
+    if points[team_name] < 4:
+        print(f"{team_name} failed to qualify for knockout stages!")
         return
     
     # Knockout stages
-    if knockout_stages():
-        print("\nCONGRATULATIONS! YOU HAVE WON THE WORLD CUP!")
+    if knockout_stages(team_name):
+        print(f"\nCONGRATULATIONS! {team_name} HAS WON THE WORLD CUP!")
     else:
-        print("\nTeam eliminated from tournament.")
+        print(f"\n{team_name} eliminated from tournament.")
 
 # Run the simulation
 if __name__ == "__main__":
