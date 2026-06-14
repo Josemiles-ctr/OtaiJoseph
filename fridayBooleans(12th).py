@@ -1,13 +1,5 @@
-a,b= True, False
-
-#true and true is true
-print(a and a)
-
-# true or false is true
-print(a or b)
-
-# false and false is true
-print(b and b)
-    
-# false or false is false
-print(b or b)
+dictionary={"Monday":1,"Tuesday":2,"Wednesday":3,"Thursday":4,"Friday":5,"Saturday":6,"Sunday":7}
+print(dictionary)
+last=dictionary.pop("Monday")
+print(dictionary)
+print(last)
