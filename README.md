@@ -10,8 +10,9 @@ A collection of Year 2 software engineering recess term assignments covering **P
 
 | File | Topic | Description |
 |------|-------|-------------|
-| `day.py` | Python / Control Flow | Maps day-of-week numbers (1-7) to names using `match`/`case`. Also demonstrates dictionary manipulation (`pop`, printing). |
+| `day.py` | Python / Control Flow | Maps day-of-week numbers (1-7) to names using `match`/`case`. |
 | `fridayBooleans(12th).py` | Python / Data Structures | Demonstrates dictionary `pop` operations, printing remaining keys and removed values. |
+| `mondayLesson15th.py` | Python / Data Structures | Explores Python sets, lists, and tuples, demonstrating constructors, operations (union, intersection, difference, symmetric difference), mutability/immutability, and conversions. |
 | `login.py` | Python / Authentication | Simple login system with role-based access (Admin, Customer, Cashier) and a corresponding role menu. |
 | `ecommerce.py` | Python / Pricing Logic | E-commerce price calculator with location-based tax, price-tier discounts, and coupon code discounts. |
 | `assignment2.py` | Python / Integration | Entry-point script importing `login.py` and `ecommerce.py` to run a combined flow: login → role menu → pricing. |
@@ -26,6 +27,8 @@ A collection of Year 2 software engineering recess term assignments covering **P
 
 ```bash
 python day.py
+python "fridayBooleans(12th).py"
+python mondayLesson15th.py
 python login.py
 python ecommerce.py
 python assignment2.py
